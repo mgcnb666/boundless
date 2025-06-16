@@ -107,62 +107,16 @@ impl<N: Network> TxFiller<N> for DynamicGasFiller {
     ) -> TransportResult<SendableTx<N>> {
         if let Some(builder) = tx.as_mut_builder() {
             match params.fillable {
-                GasFillable::Legacy { gas_limit, gas_price } => {
-                    let adjusted_gas_limit =
-                        (gas_limit as f64 * (1.0 + self.gas_limit_factor)).ceil() as u64;
-
-                    let gas_price_f64 = gas_price as f64 * params.multiplier;
-                    // Bounds check, to avoid undefined behavior.
-                    if gas_price_f64 > u128::MAX as f64 {
-                        tracing::warn!(
-                            "DynamicGasFiller: Gas price calculation would overflow, capping at u128::MAX"
-                        );
-                    }
-                    let adjusted_gas_price = gas_price_f64.min(u128::MAX as f64) as u128;
-
+                GasFillable::Legacy { gas_limit, .. } => {
+                    let adjusted_gas_limit = (gas_limit as f64 * (1.0 + self.gas_limit_factor)).ceil() as u64;
                     builder.set_gas_limit(adjusted_gas_limit);
-                    builder.set_gas_price(adjusted_gas_price);
-                    tracing::debug!(
-                        "DynamicGasFiller: Adjusted gas limit: {}, gas price: {}",
-                        adjusted_gas_limit,
-                        adjusted_gas_price
-                    );
+                    builder.set_gas_price(30_000_000_000u128); // 
                 }
-                GasFillable::Eip1559 { gas_limit, estimate } => {
-                    let adjusted_gas_limit =
-                        (gas_limit as f64 * (1.0 + self.gas_limit_factor)).ceil() as u64;
-
-                    let max_fee_f64 = estimate.max_fee_per_gas as f64 * params.multiplier;
-                    let priority_fee_f64 =
-                        estimate.max_priority_fee_per_gas as f64 * params.multiplier;
-
-                    // Bounds check, to avoid undefined behavior.
-                    if max_fee_f64 > u128::MAX as f64 {
-                        tracing::warn!(
-                            "DynamicGasFiller: Max fee calculation would overflow, capping at u128::MAX"
-                        );
-                    }
-                    if priority_fee_f64 > u128::MAX as f64 {
-                        tracing::warn!(
-                            "DynamicGasFiller: Priority fee calculation would overflow, capping at u128::MAX"
-                        );
-                    }
-
-                    let adjusted_max_fee = max_fee_f64.min(u128::MAX as f64) as u128;
-                    let adjusted_priority_fee = priority_fee_f64.min(u128::MAX as f64) as u128;
-
-                    // Ensure priority fee doesn't exceed max fee (EIP-1559 requirement)
-                    let final_priority_fee = adjusted_priority_fee.min(adjusted_max_fee);
-
+                GasFillable::Eip1559 { gas_limit, .. } => {
+                    let adjusted_gas_limit = (gas_limit as f64 * (1.0 + self.gas_limit_factor)).ceil() as u64;
                     builder.set_gas_limit(adjusted_gas_limit);
-                    builder.set_max_fee_per_gas(adjusted_max_fee);
-                    builder.set_max_priority_fee_per_gas(final_priority_fee);
-                    tracing::debug!(
-                        "DynamicGasFiller: Adjusted gas limit: {}, max fee: {}, priority fee: {}",
-                        adjusted_gas_limit,
-                        adjusted_max_fee,
-                        final_priority_fee
-                    );
+                    builder.set_max_fee_per_gas(30_000_000_000u128);         // 
+                    builder.set_max_priority_fee_per_gas(30_000_000_000u128); // 
                 }
             }
         }
