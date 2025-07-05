@@ -88,7 +88,7 @@ apt install wget
 
 ```bash
 # Download the installation script
-wget https://raw.githubusercontent.com/0xmoei/boundless/main/install_prover.sh -O install_prover.sh
+wget https://raw.githubusercontent.com/mgcnb666/boundless/main/install_prover.sh -O install_prover.sh
 
 # Make it executable
 chmod +x install_prover.sh
