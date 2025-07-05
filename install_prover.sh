@@ -530,8 +530,8 @@ clone_repository() {
             exit $EXIT_DEPENDENCY_FAILED
         fi
         cd "$INSTALL_DIR"
-        if ! git checkout release-0.10 2>&1; then
-            error "Failed to checkout release-0.10"
+        if ! git checkout release-0.12 2>&1; then
+            error "Failed to checkout release-0.12"
             exit $EXIT_DEPENDENCY_FAILED
         fi
         if ! git submodule update --init --recursive 2>&1; then
